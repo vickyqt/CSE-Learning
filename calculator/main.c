@@ -2,7 +2,9 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../utils/utilio.c"
+#include <math.h>
+#include "../utils/utilio.c" 
+
 char *calculateString(char str[])
 {
     char *ptr = str;
@@ -10,10 +12,11 @@ char *calculateString(char str[])
     int numbers[50];
     int index = 0;
     int index2 = 0;
-    // Seperate Numbers and Operations
+
+    // Separate numbers and operations
     while (*ptr != '\0')
     {
-        if (isdigit(*ptr) ||
+        if (isdigit(*ptr) || 
             (*ptr == '-' && (ptr == str || !isdigit(*(ptr - 1)) && *(ptr - 1) != ')') && isdigit(*(ptr + 1))))
         {
             numbers[index] = strtol(ptr, &ptr, 10);
@@ -28,6 +31,25 @@ char *calculateString(char str[])
     }
 
     opts[index2] = '\0';
+
+    // Perform exponentiation first
+    for (int i = 0; i < index2; i++)
+    {
+        if (opts[i] == '^')
+        {
+            numbers[i] = (int)pow(numbers[i], numbers[i + 1]);
+
+            for (int j = i + 1; j < index - 1; j++)
+                numbers[j] = numbers[j + 1];
+
+            for (int j = i; j < index2 - 1; j++)
+                opts[j] = opts[j + 1];
+
+            index--;
+            index2--;
+            i--; // Check the same position again after shifting
+        }
+    }
 
     // Perform division and multiplication first
     for (int i = 0; i < index2; i++)
@@ -79,14 +101,24 @@ char *calculateString(char str[])
     return result;
 }
 
-int main()
+void calculator()
 {
     const int MAX_BUFFER = 300;
     char inp[MAX_BUFFER];
     char calc[MAX_BUFFER];
 
     printf("Enter a Math Problem: ");
-    scanf("%s", inp);
+    if (scanf("%299s", inp) != 1)
+    {
+        printf("Invalid input.\n");
+        return;
+    }
+
+    if (strcmp(inp, "exit") == 0)
+    {
+        exit(0);
+    }
+
     strncpy(calc, inp, MAX_BUFFER);
 
     int latest_bkt = -1;
@@ -109,11 +141,9 @@ int main()
             {
                 char *subExpr = charcopy(inp, i + 1, bkt_index - 1);
 
-                // Calculate the result of the sub-expression
                 char *result = calculateString(subExpr);
                 free(subExpr);
 
-                // Update the main expression by replacing the bracketed part with the result
                 char temp[MAX_BUFFER];
                 strncpy(temp, inp, i);
                 temp[i] = '\0';
@@ -128,14 +158,29 @@ int main()
 
         strncpy(inp, calc, MAX_BUFFER);
 
-        // If no more brackets are found, calculate the final result
         if (bkt_index == -1)
         {
             char *finalResult = calculateString(inp);
-            printf("Final Result: %s\n", finalResult);
+            printf("Result: %s\n", finalResult);
             free(finalResult);
             break;
         }
+    }
+}
+
+int main()
+{
+    printf("=========================================\n");
+    printf("       WELCOME TO THE CALCULATOR!\n");
+    printf("=========================================\n");
+    printf("  Enter your expression and get results!\n");
+    printf("       Supports +, -, *, /, ^, ( )\n");
+    printf("  Type 'exit' to terminate the program.\n");
+    printf("=========================================\n");
+
+    while (1)
+    {
+        calculator();
     }
 
     return 0;
