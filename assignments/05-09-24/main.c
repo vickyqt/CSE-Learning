@@ -1,14 +1,6 @@
 #include "../../utils/utilio.c"
 #include <stdio.h>
-int main()
-{
-    // maxBetweenTwoNum()
-    // checkEvenOrOdd()
-    // leapYear()
-    // maxBetweenThreeNum()
-    // divisibleBy5and11()
-    // checkEvenOrOdd()
-}
+
 void maxBetweenTwoNum()
 {
     int a, b;
@@ -51,6 +43,10 @@ void divisibleBy5and11()
     printf("A is not Divisible by 5 and/or 11");
 }
 void leapYear()
+
+
+
+
 {
     int a;
     iinput(&a, "a Year");
@@ -59,4 +55,13 @@ void leapYear()
         printf("%d is a Leap Year", a);
     else
         printf("%d is not a Leap Year", a);
+}
+int main()
+{
+    // maxBetweenTwoNum();
+    // checkEvenOrOdd();
+    // leapYear();
+    // maxBetweenThreeNum();
+    // divisibleBy5and11();
+    // checkEvenOrOdd();
 }
