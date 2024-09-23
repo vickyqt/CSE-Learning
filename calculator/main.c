@@ -3,23 +3,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "../utils/utilio.c" 
+#include "../utils/utilio.c"
+const int MAX_BUFFER = 400;
 
-char *calculateString(char str[])
+char *calculateExpression(char str[])
 {
     char *ptr = str;
     char opts[50];
-    int numbers[50];
+    double numbers[50];
     int index = 0;
     int index2 = 0;
 
     // Separate numbers and operations
     while (*ptr != '\0')
     {
-        if (isdigit(*ptr) || 
-            (*ptr == '-' && (ptr == str || !isdigit(*(ptr - 1)) && *(ptr - 1) != ')') && isdigit(*(ptr + 1))))
+        if (isdigit(*ptr) ||
+            ((*ptr == '-' || *ptr == '.') && (ptr == str || !isdigit(*(ptr - 1)) && *(ptr - 1) != ')') && (isdigit(*(ptr + 1)) || *(ptr + 1) == '.')))
         {
-            numbers[index] = strtol(ptr, &ptr, 10);
+            numbers[index] = strtod(ptr, &ptr);
             index++;
         }
         else
@@ -96,21 +97,21 @@ char *calculateString(char str[])
     }
 
     char *result = (char *)malloc(20 * sizeof(char));
-    sprintf(result, "%d", numbers[0]);
+    sprintf(result, "%.3f", numbers[0]);
 
     return result;
 }
 
 void calculator()
 {
-    const int MAX_BUFFER = 300;
+
     char inp[MAX_BUFFER];
     char calc[MAX_BUFFER];
 
     printf("Enter a Math Problem: ");
-    if (scanf("%299s", inp) != 1)
+    if (scanf("%399s", inp) != 1)
     {
-        printf("Invalid input.\n");
+        printf("\nInvalid input.\n");
         return;
     }
 
@@ -121,51 +122,44 @@ void calculator()
 
     strncpy(calc, inp, MAX_BUFFER);
 
-    int latest_bkt = -1;
-    int bktArray[10];
-
-    for (int z = 0; z < 10; z++)
+    int bkt_index = -1;
+    do
     {
-        int bkt_index = -1;
 
-        // Search for closing brackets and match with opening brackets
-        for (int i = strlen(inp) - 1; i >= 0; i--)
+        bkt_index = -1;
+        for (int i = 0; i < strlen(inp); i++)
         {
             char c = inp[i];
-
-            if (c == ')')
+            if (c == '(')
             {
                 bkt_index = i;
             }
-            else if (c == '(' && bkt_index != -1)
+            else if (c == ')' && bkt_index != -1)
             {
-                char *subExpr = charcopy(inp, i + 1, bkt_index - 1);
-
-                char *result = calculateString(subExpr);
+                char *subExpr = charcopy(inp, bkt_index + 1, i - 1);
+                char *result = calculateExpression(subExpr);
                 free(subExpr);
-
-                char temp[MAX_BUFFER];
-                strncpy(temp, inp, i);
-                temp[i] = '\0';
-                strcat(temp, result);
-                strcat(temp, inp + bkt_index + 1);
+                strncpy(calc, inp, bkt_index);
+                calc[bkt_index] = '\0';
+                if (bkt_index > 0 && isdigit(inp[bkt_index - 1]))
+                {
+                    strcat(calc, "*");
+                }
+                strcat(calc, result);
+                if (strlen(inp) > i && isdigit(inp[i + 1]))
+                {
+                    strcat(calc, "*");
+                }
+                strcat(calc, inp + i + 1);
                 free(result);
-
-                strncpy(calc, temp, MAX_BUFFER);
+                strncpy(inp, calc, MAX_BUFFER);
                 break;
             }
         }
-
-        strncpy(inp, calc, MAX_BUFFER);
-
-        if (bkt_index == -1)
-        {
-            char *finalResult = calculateString(inp);
-            printf("Result: %s\n", finalResult);
-            free(finalResult);
-            break;
-        }
-    }
+    } while (bkt_index != -1);
+    char *finalResult = calculateExpression(inp);
+    printf("Result: %s\n", finalResult);
+    free(finalResult);
 }
 
 int main()
@@ -175,6 +169,7 @@ int main()
     printf("=========================================\n");
     printf("  Enter your expression and get results!\n");
     printf("       Supports +, -, *, /, ^, ( )\n");
+    printf("          Floating Precision: 3\n");
     printf("  Type 'exit' to terminate the program.\n");
     printf("=========================================\n");
 
