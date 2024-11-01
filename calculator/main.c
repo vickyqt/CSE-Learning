@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <errno.h>
 #include "../utils/utilio.c"
 const int MAX_BUFFER = 400;
 
@@ -20,9 +21,26 @@ char *calculateExpression(char str[])
         if (isdigit(*ptr) ||
             ((*ptr == '-' || *ptr == '.') && (ptr == str || !isdigit(*(ptr - 1)) && *(ptr - 1) != ')') && (isdigit(*(ptr + 1)) || *(ptr + 1) == '.')))
         {
+            errno = 0; // for error checking because there is a high chance of strtod going on seroides XD
             numbers[index] = strtod(ptr, &ptr);
-            index++;
-        }
+                if (errno == ERANGE)
+                {
+                    if (numbers == HUGE_VAL || numbers == -HUGE_VAL)
+                    {
+                        printf("Overflow occurred\n");
+                        return 1;
+                    }
+                    else if (numbers == 0 || numbers < DBL_MIN)
+                    {
+                        printf("Underflow occurred\n");
+                        return 1;
+                    }
+                    
+                }
+                else 
+                {
+                    index++;
+                }
         else
         {
             opts[index2] = *ptr;
